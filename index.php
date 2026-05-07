@@ -1,57 +1,87 @@
-<?php include 'crud.php'; ?>
+<?php
+
+// ======================
+// TAMBAH DATA
+// ======================
+if(isset($_POST['tambah'])){
+
+    $data = [
+        "nama" => $_POST['nama'],
+        "sandi" => $_POST['sandi']
+    ];
+
+    $options = [
+        "http" => [
+            "method"  => "POST",
+            "header"  => "Content-Type: application/json",
+            "content" => json_encode($data)
+        ]
+    ];
+
+    $context = stream_context_create($options);
+
+    file_get_contents("http://localhost/api.php", false, $context);
+
+    header("Location: index.php");
+    exit;
+}
+
+// ======================
+// HAPUS DATA
+// ======================
+if(isset($_GET['hapus'])){
+
+    $id = $_GET['hapus'];
+
+    $options = [
+        "http" => [
+            "method" => "DELETE"
+        ]
+    ];
+
+    $context = stream_context_create($options);
+
+    file_get_contents("http://localhost/api.php?id=$id", false, $context);
+
+    header("Location: index.php");
+    exit;
+}
+
+// ======================
+// AMBIL DATA DARI API
+// ======================
+$json = file_get_contents("http://localhost/api.php");
+
+$result = json_decode($json, true);
+
+$users = $result['data'];
+
+?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>PHP CRUD Railway</title>
+    <title>CRUD API PHP</title>
 </head>
 <body>
 
-<?php
-$edit = false;
-$id = "";
-$nama = "";
-$sandi = "";
-
-if(isset($_GET['edit'])){
-    $edit = true;
-
-    $id_edit = $_GET['edit'];
-
-    $ambil = mysqli_query($koneksi, "SELECT * FROM users WHERE id='$id_edit'");
-    $row = mysqli_fetch_assoc($ambil);
-
-    $id = $row['id'];
-    $nama = $row['nama'];
-    $sandi = $row['sandi'];
-}
-?>
-
-<h2>
-    <?php echo $edit ? "Edit Data" : "Tambah Data"; ?>
-</h2>
+<h2>Tambah Data</h2>
 
 <form method="POST">
-
-    <input type="hidden" name="id" value="<?php echo $id; ?>">
 
     <input type="text"
            name="nama"
            placeholder="Nama"
-           required
-           value="<?php echo $nama; ?>">
+           required>
 
     <input type="text"
            name="sandi"
            placeholder="Sandi"
-           required
-           value="<?php echo $sandi; ?>">
+           required>
 
-    <?php if($edit){ ?>
-        <button type="submit" name="update">Update</button>
-    <?php } else { ?>
-        <button type="submit" name="tambah">Simpan</button>
-    <?php } ?>
+    <button type="submit" name="tambah">
+        Simpan
+    </button>
 
 </form>
 
@@ -66,25 +96,25 @@ if(isset($_GET['edit'])){
         <th>Aksi</th>
     </tr>
 
-    <?php while($d = mysqli_fetch_array($data)){ ?>
+    <?php foreach($users as $d){ ?>
 
     <tr>
+
         <td><?php echo $d['id']; ?></td>
+
         <td><?php echo $d['nama']; ?></td>
+
         <td><?php echo $d['sandi']; ?></td>
 
         <td>
-            <a href="index.php?edit=<?php echo $d['id']; ?>">
-                Edit
-            </a>
-
-            |
 
             <a href="index.php?hapus=<?php echo $d['id']; ?>"
                onclick="return confirm('Yakin hapus data?')">
-                Hapus
+               Hapus
             </a>
+
         </td>
+
     </tr>
 
     <?php } ?>
