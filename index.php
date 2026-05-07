@@ -1,5 +1,11 @@
 <?php
 
+// URL API otomatis
+$protocol = isset($_SERVER['HTTPS']) ? "https" : "http";
+$host = $_SERVER['HTTP_HOST'];
+
+$api = $protocol . "://" . $host . "/api.php";
+
 // ======================
 // TAMBAH DATA
 // ======================
@@ -13,14 +19,14 @@ if(isset($_POST['tambah'])){
     $options = [
         "http" => [
             "method"  => "POST",
-            "header"  => "Content-Type: application/json",
+            "header"  => "Content-Type: application/json\r\n",
             "content" => json_encode($data)
         ]
     ];
 
     $context = stream_context_create($options);
 
-    file_get_contents("http://localhost/api.php", false, $context);
+    file_get_contents($api, false, $context);
 
     header("Location: index.php");
     exit;
@@ -41,7 +47,7 @@ if(isset($_GET['hapus'])){
 
     $context = stream_context_create($options);
 
-    file_get_contents("http://localhost/api.php?id=$id", false, $context);
+    file_get_contents($api . "?id=" . $id, false, $context);
 
     header("Location: index.php");
     exit;
@@ -50,18 +56,18 @@ if(isset($_GET['hapus'])){
 // ======================
 // AMBIL DATA DARI API
 // ======================
-$json = file_get_contents("http://localhost/api.php");
+$json = file_get_contents($api);
 
 $result = json_decode($json, true);
 
-$users = $result['data'];
+$users = $result['data'] ?? [];
 
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CRUD API PHP</title>
+    <title>CRUD API PHP Railway</title>
 </head>
 <body>
 
@@ -74,7 +80,7 @@ $users = $result['data'];
            placeholder="Nama"
            required>
 
-    <input type="text"
+    <input type="password"
            name="sandi"
            placeholder="Sandi"
            required>
@@ -110,7 +116,9 @@ $users = $result['data'];
 
             <a href="index.php?hapus=<?php echo $d['id']; ?>"
                onclick="return confirm('Yakin hapus data?')">
+
                Hapus
+
             </a>
 
         </td>
